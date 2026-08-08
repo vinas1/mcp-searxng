@@ -1,10 +1,10 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "io.github.ihor-sokoliuk/mcp-searxng",
+  "name": "io.github.vinas1/mcp-searxng",
   "title": "SearXNG Search",
   "description": "MCP server for SearXNG — privacy-respecting web search with pagination, URL reading",
   "repository": {
-    "url": "https://github.com/ihor-sokoliuk/mcp-searxng",
+    "url": "https://github.com/vinas1/mcp-searxng",
     "source": "github"
   },
   "version": "1.14.1",

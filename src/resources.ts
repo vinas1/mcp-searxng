@@ -84,7 +84,7 @@ export function createConfigResource(mcpServer?: McpServer) {
 
   const config = {
     serverInfo: {
-      name: "ihor-sokoliuk/mcp-searxng",
+      name: "vinas1/mcp-searxng",
       version: packageVersion,
       description: "MCP server for SearXNG integration"
     },

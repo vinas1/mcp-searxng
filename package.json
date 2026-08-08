@@ -1,15 +1,15 @@
 {
     "name": "mcp-searxng",
     "version": "1.14.1",
-    "mcpName": "io.github.ihor-sokoliuk/mcp-searxng",
+    "mcpName": "io.github.vinas1/mcp-searxng",
     "description": "MCP server for SearXNG integration",
-    "license": "MIT",
-    "author": "Ihor Sokoliuk (https://github.com/ihor-sokoliuk)",
-    "homepage": "https://github.com/ihor-sokoliuk/mcp-searxng",
-    "bugs": "https://github.com/ihor-sokoliuk/mcp-searxng/issues",
+    "license": "Apache-2.0",
+    "author": "vinas1 (https://github.com/vinas1)",
+    "homepage": "https://github.com/vinas1/mcp-searxng",
+    "bugs": "https://github.com/vinas1/mcp-searxng/issues",
     "repository": {
         "type": "git",
-        "url": "https://github.com/ihor-sokoliuk/mcp-searxng"
+        "url": "https://github.com/vinas1/mcp-searxng"
     },
     "keywords": [
         "mcp",
@@ -77,5 +77,8 @@
     },
     "overrides": {
         "hono": ">=4.13.0"
+    },
+    "allowScripts": {
+        "esbuild@0.28.1": true
     }
 }

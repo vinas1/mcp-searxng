@@ -4,19 +4,19 @@
 
 **Privacy-respecting web search for AI assistants — use an operator-controlled or trusted SearXNG instance with Claude, Cursor, and more.**
 
-[![GitHub Stars](https://img.shields.io/github/stars/ihor-sokoliuk/mcp-searxng?style=flat-square&logo=github&label=stars)](https://github.com/ihor-sokoliuk/mcp-searxng/stargazers)
+[![GitHub Stars](https://img.shields.io/github/stars/vinas1/mcp-searxng?style=flat-square&logo=github&label=stars)](https://github.com/vinas1/mcp-searxng/stargazers)
 [![npm version](https://img.shields.io/npm/v/mcp-searxng?style=flat-square&logo=npm)](https://www.npmjs.com/package/mcp-searxng)
 [![npm downloads](https://img.shields.io/npm/dm/mcp-searxng?style=flat-square&logo=npm&label=downloads%2Fmo)](https://www.npmjs.com/package/mcp-searxng)
 [![Docker Pulls](https://img.shields.io/docker/pulls/isokoliuk/mcp-searxng?style=flat-square&logo=docker)](https://hub.docker.com/r/isokoliuk/mcp-searxng)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
-[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/ihor-sokoliuk/mcp-searxng/badge)](https://scorecard.dev/viewer/?uri=github.com/ihor-sokoliuk/mcp-searxng)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/vinas1/mcp-searxng/badge)](https://scorecard.dev/viewer/?uri=github.com/vinas1/mcp-searxng)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/13143/badge)](https://www.bestpractices.dev/projects/13143)
-[![mcp-searxng MCP server](https://glama.ai/mcp/servers/ihor-sokoliuk/mcp-searxng/badges/score.svg)](https://glama.ai/mcp/servers/ihor-sokoliuk/mcp-searxng)
-[![GitHub MCP Registry](https://img.shields.io/badge/GitHub_MCP_Registry-listed-2da44e?style=flat-square&logo=github&logoColor=white)](https://github.com/mcp/ihor-sokoliuk/mcp-searxng)
+[![mcp-searxng MCP server](https://glama.ai/mcp/servers/vinas1/mcp-searxng/badges/score.svg)](https://glama.ai/mcp/servers/vinas1/mcp-searxng)
+[![GitHub MCP Registry](https://img.shields.io/badge/GitHub_MCP_Registry-listed-2da44e?style=flat-square&logo=github&logoColor=white)](https://github.com/mcp/vinas1/mcp-searxng)
 
 An [MCP server](https://modelcontextprotocol.io/introduction) that integrates the [SearXNG](https://docs.searxng.org) API, giving AI assistants web search capabilities.
 
-✨ Featured in the [GitHub MCP Registry](https://github.com/mcp/ihor-sokoliuk/mcp-searxng).
+✨ Featured in the [GitHub MCP Registry](https://github.com/mcp/vinas1/mcp-searxng).
 
 </div>
 

@@ -133,7 +133,7 @@ function getDefaultUrlReadMaxChars(mcpServer: McpServer): number | undefined {
 export function createMcpServer(): McpServer {
   const mcpServer = new McpServer(
     {
-      name: "ihor-sokoliuk/mcp-searxng",
+      name: "vinas1/mcp-searxng",
       version: packageVersion,
     },
     {
