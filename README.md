@@ -1,42 +1,168 @@
 <div align="center">
+  <h1>🗽 Privacy-respecting web search for AI assistants! This fork is 🇺🇸 based and verified safe. 🦅</h1>
 
 # 🔍 SearXNG MCP Server
 
 **Privacy-respecting web search for AI assistants — use an operator-controlled or trusted SearXNG instance with Claude, Cursor, and more.**
 
-[![GitHub Stars](https://img.shields.io/github/stars/vinas1/mcp-searxng?style=flat-square&logo=github&label=stars)](https://github.com/vinas1/mcp-searxng/stargazers)
-[![npm version](https://img.shields.io/npm/v/mcp-searxng?style=flat-square&logo=npm)](https://www.npmjs.com/package/mcp-searxng)
-[![npm downloads](https://img.shields.io/npm/dm/mcp-searxng?style=flat-square&logo=npm&label=downloads%2Fmo)](https://www.npmjs.com/package/mcp-searxng)
-[![Docker Pulls](https://img.shields.io/docker/pulls/isokoliuk/mcp-searxng?style=flat-square&logo=docker)](https://hub.docker.com/r/isokoliuk/mcp-searxng)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
-[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/vinas1/mcp-searxng/badge)](https://scorecard.dev/viewer/?uri=github.com/vinas1/mcp-searxng)
-[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/13143/badge)](https://www.bestpractices.dev/projects/13143)
-[![mcp-searxng MCP server](https://glama.ai/mcp/servers/vinas1/mcp-searxng/badges/score.svg)](https://glama.ai/mcp/servers/vinas1/mcp-searxng)
-[![GitHub MCP Registry](https://img.shields.io/badge/GitHub_MCP_Registry-listed-2da44e?style=flat-square&logo=github&logoColor=white)](https://github.com/mcp/vinas1/mcp-searxng)
 
-An [MCP server](https://modelcontextprotocol.io/introduction) that integrates the [SearXNG](https://docs.searxng.org) API, giving AI assistants web search capabilities.
 
-✨ Featured in the [GitHub MCP Registry](https://github.com/mcp/vinas1/mcp-searxng).
+🎇An [MCP server](https://modelcontextprotocol.io/introduction) that integrates the [SearXNG](https://docs.searxng.org) API, giving AI assistants web search capabilities.
+
 
 </div>
 
 ## Quick Start
 
-Add to your MCP client configuration (e.g. `claude_desktop_config.json`):
+Add to your MCP client configuration (e.g. `mcp-client-config.json`):
 
-```json
-{
-  "mcpServers": {
-    "searxng": {
-      "command": "npx",
-      "args": ["-y", "mcp-searxng"],
-      "env": {
-        "SEARXNG_URL": "YOUR_SEARXNG_INSTANCE_URL"
+Using `npx -y` with a bare package name in a persistent configuration file introduces significant **supply chain vulnerabilities**.
+
+🚨 The Primary Risks
+
+- **Dynamic Execution**: The `-y` flag bypasses the confirmation prompt. It automatically downloads and runs the package directly from the public npm registry every time the server starts.
+- **Malicious Typosquatting**: If a threat actor publishes a malicious package with a similar name (e.g., `mcp-searxngs`) and you misspell it, `npx` will execute the attacker's code instantly.
+- **Package Takeover**: If the original maintainer's npm account is compromised, or if the package is abandoned and deleted (allowing an attacker to re-register the exact name), your system will automatically pull down the compromised version.
+- **Lack of Version Pinning**: Without a specific version tag, `npx` always fetches the `latest` version. This means a compromised update will immediately execute on your machine without your review.
+
+🛡️ How to Fix It
+
+To secure this setup, separate the installation from the execution and pin the version:
+
+1. **Globally install the specific version** you have audited:
+    
+    bash
+    
+    ```
+    npm install -g mcp-searxng@1.0.0
+    ```
+    
+    Use code with caution.
+    
+2. **Update your configuration** to execute the local binary directly rather than pulling dynamically via `npx`:
+    
+    json
+    
+    ```
+    {
+      "mcpServers": {
+        "searxng": {
+          "command": "mcp-searxng",
+          "args": [],
+          "env": {
+            "SEARXNG_URL": "https://YOUR_SEARXNG_INSTANCE_URL"
+          }
+        }
       }
     }
-  }
-}
+    ```
+    
+    Use code with caution.
+    
+
+_(Note: Ensure your global npm `bin` directory is in your system's PATH so the host application can find the `mcp-searxng` command)._
+
+Would you like help setting up a **dependabot alert** or a **package lock** strategy to automatically monitor this tool for security updates?
+
+no I want to update my repo but warn others about the risk and offer a better safe workaround
+
+I can certainly help you draft a clear, scannable warning and workaround section for your repository's README.
+
+Here is a structured markdown block you can drop directly into your documentation to inform your users.
+
+⚠️ Supply Chain Security Warning
+
+The standard `npx` configuration execution model carries an inherent supply chain risk:
+
+json
+
 ```
+// ❌ RISKY CONFIGURATION
+"command": "npx",
+"args": ["-y", "mcp-searxng"]
+```
+
+Use code with caution.
+
+Why this is unsafe:
+
+- **Bypassed Prompts**: The `-y` flag auto-approves installation, giving you no chance to verify changes before execution.
+    
+- **Typosquatting Vulnerability**: If you misspell the package name in your config file, `npx` will instantly execute whatever malicious package occupies that typo's slot on the public npm registry.
+    
+- **Implicit Latest Tag**: Without an explicit version pin, `npx` dynamically fetches the absolute latest code directly from npm on every server initialization. If the upstream repository or developer account is compromised, the malicious update executes automatically on your host machine.
+    
+
+---
+
+🛡️ Safe Workaround
+
+To mitigate this risk, avoid dynamic remote execution entirely. Install a specific, audited version locally or globally, and point your configuration directly to that fixed binary.
+
+Option A: Local Installation (Recommended for project isolation)
+
+1. Install the package explicitly as a dependency with a pinned version:
+    
+    bash
+    
+    ```
+    npm install mcp-searxng@1.0.0 --save-exact
+    ```
+    
+    Use code with caution.
+    
+2. Point your configuration directly to the local node modules binary path:
+    
+    json
+    
+    ```
+    {
+      "mcpServers": {
+        "searxng": {
+          "command": "node",
+          "args": ["./node_modules/mcp-searxng/dist/index.js"],
+          "env": {
+            "SEARXNG_URL": "https://YOUR_SEARXNG_INSTANCE_URL"
+          }
+        }
+      }
+    }
+    ```
+    
+    Use code with caution.
+    
+
+Option B: Global Pinned Installation
+
+1. Install the audited version globally:
+    
+    bash
+    
+    ```
+    npm install -g mcp-searxng@1.0.0
+    ```
+    
+    Use code with caution.
+    
+2. Call the command directly (ensure your global npm `bin` directory is in your system's PATH):
+    
+    json
+    
+    ```
+    {
+      "mcpServers": {
+        "searxng": {
+          "command": "mcp-searxng",
+          "args": [],
+          "env": {
+            "SEARXNG_URL": "https://YOUR_SEARXNG_INSTANCE_URL"
+          }
+        }
+      }
+    }
+    ```
+    
+    Use code with caution.
 
 Replace `YOUR_SEARXNG_INSTANCE_URL` with the URL of your SearXNG instance (e.g. `https://searxng.example.com`). You can also provide interchangeable replicas as a semicolon-separated list, e.g. `https://one.example.com;https://two.example.com`.
 
