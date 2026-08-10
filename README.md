@@ -43,9 +43,9 @@ Why this is unsafe:
 
 ---
 
-🛡️ Safe Workaround
+🛡️ Safer Workaround
 
-To mitigate this risk, avoid dynamic remote execution entirely. Install a specific, audited version locally or globally, and point your configuration directly to that fixed binary.
+To mitigate _some of this risk_, avoid dynamic remote execution entirely. Install a specific, audited version locally or globally, and point your configuration directly to that fixed binary.
 
 Option A: Local Installation (Recommended for project isolation)
 
@@ -125,7 +125,8 @@ claims, and cite evidence, see the
 For measured MCP-process CPU and memory starting points, see
 [measured deployment profiles](docs/deployment-profiles.md).
 
-## Local Clone Usage
+---
+## 🛡️ Safe and Secure Local Clone Usage (recommended)
 
 If you have cloned this repository and want to run the server locally without relying on `npx`, follow these steps:
 
@@ -156,6 +157,9 @@ Point your configuration to the local Node binary and the built entry point. Rep
 
 ### 🛡️ Security Note
 Running from a local clone is significantly safer than using `npx`. While `npx` can lead to supply chain attacks by fetching and executing remote code without verification (e.g., typosquatting or package hijacking), building locally ensures you are executing the exact source code you have reviewed in your repository.
+
+
+---
 
 ## Features
 
