@@ -16,59 +16,7 @@
 
 Add to your MCP client configuration (e.g. `mcp-client-config.json`):
 
-Using `npx -y` with a bare package name in a persistent configuration file introduces significant **supply chain vulnerabilities**.
 
-🚨 The Primary Risks
-
-- **Dynamic Execution**: The `-y` flag bypasses the confirmation prompt. It automatically downloads and runs the package directly from the public npm registry every time the server starts.
-- **Malicious Typosquatting**: If a threat actor publishes a malicious package with a similar name (e.g., `mcp-searxngs`) and you misspell it, `npx` will execute the attacker's code instantly.
-- **Package Takeover**: If the original maintainer's npm account is compromised, or if the package is abandoned and deleted (allowing an attacker to re-register the exact name), your system will automatically pull down the compromised version.
-- **Lack of Version Pinning**: Without a specific version tag, `npx` always fetches the `latest` version. This means a compromised update will immediately execute on your machine without your review.
-
-🛡️ How to Fix It
-
-To secure this setup, separate the installation from the execution and pin the version:
-
-1. **Globally install the specific version** you have audited:
-    
-    bash
-    
-    ```
-    npm install -g mcp-searxng@1.0.0
-    ```
-    
-    Use code with caution.
-    
-2. **Update your configuration** to execute the local binary directly rather than pulling dynamically via `npx`:
-    
-    json
-    
-    ```
-    {
-      "mcpServers": {
-        "searxng": {
-          "command": "mcp-searxng",
-          "args": [],
-          "env": {
-            "SEARXNG_URL": "https://YOUR_SEARXNG_INSTANCE_URL"
-          }
-        }
-      }
-    }
-    ```
-    
-    Use code with caution.
-    
-
-_(Note: Ensure your global npm `bin` directory is in your system's PATH so the host application can find the `mcp-searxng` command)._
-
-Would you like help setting up a **dependabot alert** or a **package lock** strategy to automatically monitor this tool for security updates?
-
-no I want to update my repo but warn others about the risk and offer a better safe workaround
-
-I can certainly help you draft a clear, scannable warning and workaround section for your repository's README.
-
-Here is a structured markdown block you can drop directly into your documentation to inform your users.
 
 ⚠️ Supply Chain Security Warning
 
@@ -176,6 +124,38 @@ claims, and cite evidence, see the
 
 For measured MCP-process CPU and memory starting points, see
 [measured deployment profiles](docs/deployment-profiles.md).
+
+## Local Clone Usage
+
+If you have cloned this repository and want to run the server locally without relying on `npx`, follow these steps:
+
+### 1. Build the project
+Install dependencies and build the project to generate the necessary distribution files:
+
+```bash
+npm install
+npm run build
+```
+
+### 2. Configure your MCP client
+Point your configuration to the local Node binary and the built entry point. Replace `dist/cli.js` with the actual path to the file if you are running from a different directory:
+
+```json
+{
+  "mcpServers": {
+    "searxng": {
+      "command": "node",
+      "args": ["dist/cli.js"],
+      "env": {
+        "SEARXNG_URL": "YOUR_SEARXNG_INSTANCE_URL"
+      }
+    }
+  }
+}
+```
+
+### 🛡️ Security Note
+Running from a local clone is significantly safer than using `npx`. While `npx` can lead to supply chain attacks by fetching and executing remote code without verification (e.g., typosquatting or package hijacking), building locally ensures you are executing the exact source code you have reviewed in your repository.
 
 ## Features
 
