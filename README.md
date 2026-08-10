@@ -128,12 +128,11 @@ For measured MCP-process CPU and memory starting points, see
 ---
 ## 🛡️ Safe and Secure Local Clone Usage (recommended)
 
-If you have cloned this repository and want to run the server locally without relying on `npx`, follow these steps:
+If you have *cloned this repository* and want to run the server locally without relying on `npx`, follow the **Local MCP-SearXNG Quickstart** below:
 
-### Local MCP-SearXNG Quickstart
-Here's my known good config for a local version running on Windows. Modify it with your values.
+You may use my known good config for a local mcp-searxng running on Windows. 
 
-Clone this repo, then:
+*Modify the following with your values.*
 
 Build mcp-searxng
 ```shell
