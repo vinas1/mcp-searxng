@@ -144,6 +144,8 @@ npm run build
 ### Cline config
 Click the hambuger looking icon above the red line, then press the gear icon. Enter the following JSON
 
+*you can tell the server is working by the presence of a green dot in the following screenshot*
+
 <img width="551" height="187" alt="image" src="https://github.com/user-attachments/assets/922990f8-7d46-4df3-94f4-511375ef23af" />
 
 
@@ -165,6 +167,13 @@ Click the hambuger looking icon above the red line, then press the gear icon. En
 }  
 }
 ```
+Then:
+
+1. Save the file with Ctrl+S.
+2. Press Ctrl+Shift+P.
+3. Run **Developer: Reload Window**.
+4. Open Cline → MCP Servers → Installed.
+
 
 ---
 
