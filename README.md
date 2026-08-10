@@ -130,7 +130,48 @@ For measured MCP-process CPU and memory starting points, see
 
 If you have cloned this repository and want to run the server locally without relying on `npx`, follow these steps:
 
-### 1. Build the project
+### Local MCP-SearXNG Quickstart
+Here's my known good config for a local version running on Windows. Modify it with your values.
+
+Clone this repo, then:
+
+Build mcp-searxng
+```shell
+cd D:\c0dex\GitHub\vinas1\vinas1.github.io
+npm install
+npm run build
+```
+
+### Cline config
+Click the hambuger looking icon above the red line, then press the gear icon. Enter the following JSON
+
+<img width="551" height="187" alt="image" src="https://github.com/user-attachments/assets/922990f8-7d46-4df3-94f4-511375ef23af" />
+
+
+```json
+{  
+"mcpServers": {  
+"searxng": {  
+"command": "C:\\Program Files\\nodejs\\node.exe",  
+"args": [  
+"D:\\c0dex\\GitHub\\vinas1\\mcp-searxng\\dist\\cli.js"  
+],  
+"cwd": "D:\\c0dex\\GitHub\\vinas1\\mcp-searxng",  
+"env": {  
+"SEARXNG_URL": "http://192.168.0.60:8080/"  
+},  
+"disabled": false,  
+"autoApprove": []  
+}  
+}  
+}
+```
+
+---
+
+### Local Install Details
+
+1. Build the project
 Install dependencies and build the project to generate the necessary distribution files:
 
 ```bash
