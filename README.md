@@ -142,7 +142,7 @@ npm run build
 ```
 
 ### Cline config
-Click the hambuger looking icon above the red line, then press the gear icon. Enter the following JSON
+Click the hambuger looking icon, then press the gear icon. See the graphic for help, then enter the following JSON.
 
 
 
