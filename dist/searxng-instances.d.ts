@@ -1,0 +1,13 @@
+export declare function parseSearxngUrls(raw?: string | undefined): string[];
+export declare function getSearxngInstances(): string[];
+export declare function getPrimarySearxngInstance(): string | undefined;
+export declare function validateSearxngInstanceUrl(value: string, entryIndex?: number): string | null;
+export declare function redactSearxngInstanceUrl(raw: string): string;
+export declare function stripSearxngInstanceUrlUserinfo(url: URL): URL;
+export declare function getSearxngBasicAuthHeader(url: URL): string | undefined;
+export declare function isSearxngFanoutEnabled(): boolean;
+export declare function recordSearxngInstanceFailure(instanceUrl: string, now?: number): void;
+export declare function recordSearxngInstanceSuccess(instanceUrl: string): void;
+export declare function isSearxngInstanceCooledDown(instanceUrl: string, now?: number): boolean;
+export declare function getHealthySearxngInstances(instances: string[], now?: number): string[];
+export declare function clearSearxngInstanceStateForTests(): void;

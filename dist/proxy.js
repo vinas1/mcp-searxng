@@ -1,0 +1,330 @@
+import * as dns from "node:dns";
+import { Agent, ProxyAgent, fetch as undiciFetch } from "undici";
+import { getHttpSecurityConfig } from "./http-security.js";
+import { getConnectOptions } from "./tls-config.js";
+import { createUrlSecurityPolicyDnsError, isPrivateAddress } from "./url-security.js";
+import { getSearxngBasicAuthHeader } from "./searxng-instances.js";
+const defaultSearxngFetch = undiciFetch;
+let searxngFetch = defaultSearxngFetch;
+export function fetchSearxng(input, options) {
+    return searxngFetch(input, options);
+}
+export function setSearxngFetchForTesting(implementation = defaultSearxngFetch) {
+    searxngFetch = implementation;
+}
+export function createUrlReaderLookup() {
+    return (hostname, options, callback) => {
+        if (getHttpSecurityConfig().allowPrivateUrls) {
+            dns.lookup(hostname, options, callback);
+            return;
+        }
+        dns.lookup(hostname, { ...options, all: true }, (error, addresses) => {
+            if (error) {
+                callback(error, options.all ? [] : "");
+                return;
+            }
+            if (addresses.length === 0) {
+                const notFound = new Error(`No DNS records found for ${hostname}`);
+                notFound.code = "ENOTFOUND";
+                callback(notFound, options.all ? [] : "");
+                return;
+            }
+            if (addresses.some(({ address }) => isPrivateAddress(address))) {
+                callback(createUrlSecurityPolicyDnsError(hostname), options.all ? [] : "");
+                return;
+            }
+            const selected = addresses[0];
+            if (options.all) {
+                callback(null, [selected]);
+                return;
+            }
+            callback(null, selected.address, selected.family);
+        });
+    };
+}
+/**
+ * Checks if a target URL should bypass the proxy based on NO_PROXY environment variable.
+ *
+ * @param targetUrl - The URL to check against NO_PROXY rules
+ * @returns true if the URL should bypass the proxy, false otherwise
+ */
+function shouldBypassProxy(targetUrl) {
+    const noProxy = process.env.NO_PROXY || process.env.no_proxy;
+    if (!noProxy) {
+        return false;
+    }
+    // Wildcard bypass
+    if (noProxy.trim() === '*') {
+        return true;
+    }
+    let hostname;
+    try {
+        const url = new URL(targetUrl);
+        hostname = url.hostname.toLowerCase();
+    }
+    catch (error) {
+        // Invalid URL, don't bypass
+        return false;
+    }
+    // Parse comma-separated list of bypass patterns
+    const bypassPatterns = noProxy.split(',').map(pattern => pattern.trim().toLowerCase());
+    for (const pattern of bypassPatterns) {
+        if (!pattern)
+            continue;
+        // Exact hostname match
+        if (hostname === pattern) {
+            return true;
+        }
+        // Domain suffix match with leading dot (e.g., .example.com matches sub.example.com)
+        if (pattern.startsWith('.') && hostname.endsWith(pattern)) {
+            return true;
+        }
+        // Domain suffix match without leading dot (e.g., example.com matches sub.example.com and example.com)
+        if (!pattern.startsWith('.')) {
+            // Exact match
+            if (hostname === pattern) {
+                return true;
+            }
+            // Subdomain match
+            if (hostname.endsWith(`.${pattern}`)) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+/**
+ * Proxy configuration type for separating search and URL reader proxies.
+ */
+export const ProxyType = {
+    SEARCH: 'search',
+    URL_READER: 'url_reader',
+};
+/**
+ * Gets proxy URL for the specified proxy type.
+ * Checks type-specific proxy first, then falls back to global proxy.
+ *
+ * @param type - The type of proxy to get ('search' or 'url_reader')
+ * @param targetUrl - Optional target URL whose protocol is used to select between HTTP and HTTPS proxies
+ * @returns The proxy URL or undefined if not configured
+ */
+function getProxyUrl(type, targetUrl) {
+    let isHttps = false;
+    if (targetUrl) {
+        try {
+            const url = new URL(targetUrl);
+            isHttps = url.protocol === 'https:';
+        }
+        catch {
+            isHttps = false;
+        }
+    }
+    if (type === ProxyType.SEARCH) {
+        if (isHttps) {
+            return process.env.SEARCH_HTTPS_PROXY ||
+                process.env.SEARCH_HTTP_PROXY ||
+                process.env.search_https_proxy ||
+                process.env.search_http_proxy ||
+                process.env.HTTPS_PROXY ||
+                process.env.HTTP_PROXY ||
+                process.env.https_proxy ||
+                process.env.http_proxy;
+        }
+        return process.env.SEARCH_HTTP_PROXY ||
+            process.env.SEARCH_HTTPS_PROXY ||
+            process.env.search_http_proxy ||
+            process.env.search_https_proxy ||
+            // Fallback to global proxies
+            process.env.HTTP_PROXY ||
+            process.env.HTTPS_PROXY ||
+            process.env.http_proxy ||
+            process.env.https_proxy;
+    }
+    if (type === ProxyType.URL_READER) {
+        if (isHttps) {
+            return process.env.URL_READER_HTTPS_PROXY ||
+                process.env.URL_READER_HTTP_PROXY ||
+                process.env.url_reader_https_proxy ||
+                process.env.url_reader_http_proxy ||
+                process.env.HTTPS_PROXY ||
+                process.env.HTTP_PROXY ||
+                process.env.https_proxy ||
+                process.env.http_proxy;
+        }
+        return process.env.URL_READER_HTTP_PROXY ||
+            process.env.URL_READER_HTTPS_PROXY ||
+            process.env.url_reader_http_proxy ||
+            process.env.url_reader_https_proxy ||
+            // Fallback to global proxies
+            process.env.HTTP_PROXY ||
+            process.env.HTTPS_PROXY ||
+            process.env.http_proxy ||
+            process.env.https_proxy;
+    }
+    if (isHttps) {
+        return process.env.HTTPS_PROXY ||
+            process.env.HTTP_PROXY ||
+            process.env.https_proxy ||
+            process.env.http_proxy;
+    }
+    return process.env.HTTP_PROXY ||
+        process.env.HTTPS_PROXY ||
+        process.env.http_proxy ||
+        process.env.https_proxy;
+}
+/**
+ * Creates a proxy agent dispatcher for Node.js fetch API.
+ *
+ * Node.js fetch uses Undici under the hood, which requires a 'dispatcher' option
+ * instead of 'agent'. This function creates a ProxyAgent compatible with fetch.
+ *
+ * Environment variables checked (in order, depending on URL protocol):
+ * - For type 'search' and HTTPS URLs:
+ *   SEARCH_HTTPS_PROXY, SEARCH_HTTP_PROXY, search_https_proxy, search_http_proxy,
+ *   then HTTPS_PROXY, HTTP_PROXY, https_proxy, http_proxy
+ * - For type 'search' and HTTP/unknown URLs:
+ *   SEARCH_HTTP_PROXY, SEARCH_HTTPS_PROXY, search_http_proxy, search_https_proxy,
+ *   then HTTP_PROXY, HTTPS_PROXY, http_proxy, https_proxy
+ * - For type 'url_reader' and HTTPS URLs:
+ *   URL_READER_HTTPS_PROXY, URL_READER_HTTP_PROXY, url_reader_https_proxy, url_reader_http_proxy,
+ *   then HTTPS_PROXY, HTTP_PROXY, https_proxy, http_proxy
+ * - For type 'url_reader' and HTTP/unknown URLs:
+ *   URL_READER_HTTP_PROXY, URL_READER_HTTPS_PROXY, url_reader_http_proxy, url_reader_https_proxy,
+ *   then HTTP_PROXY, HTTPS_PROXY, http_proxy, https_proxy
+ * - For no specific type and HTTPS URLs:
+ *   HTTPS_PROXY, HTTP_PROXY, https_proxy, http_proxy
+ * - For no specific type and HTTP/unknown URLs:
+ *   HTTP_PROXY, HTTPS_PROXY, http_proxy, https_proxy
+ * - NO_PROXY / no_proxy: Comma-separated list of hosts to bypass proxy
+ *
+ * @param targetUrl - Optional target URL to check against NO_PROXY rules
+ * @param type - Optional proxy type ('search' or 'url_reader') for separate proxy configs
+ * @returns ProxyAgent dispatcher for fetch, or undefined if no proxy configured or bypassed
+ */
+export function createProxyAgent(targetUrl, type) {
+    const proxyUrl = getProxyUrl(type, targetUrl);
+    if (!proxyUrl) {
+        return undefined;
+    }
+    // Check if target URL should bypass proxy
+    if (targetUrl && shouldBypassProxy(targetUrl)) {
+        return undefined;
+    }
+    // Validate and normalize proxy URL
+    let parsedProxyUrl;
+    try {
+        parsedProxyUrl = new URL(proxyUrl);
+    }
+    catch (error) {
+        throw new Error(`Invalid proxy URL: ${proxyUrl}. ` +
+            "Please provide a valid URL (e.g., http://proxy:8080 or http://user:pass@proxy:8080)");
+    }
+    // Ensure proxy protocol is supported
+    if (!['http:', 'https:'].includes(parsedProxyUrl.protocol)) {
+        throw new Error(`Unsupported proxy protocol: ${parsedProxyUrl.protocol}. ` +
+            "Only HTTP and HTTPS proxies are supported.");
+    }
+    // Reconstruct base proxy URL preserving credentials
+    const auth = parsedProxyUrl.username ?
+        (parsedProxyUrl.password ? `${parsedProxyUrl.username}:${parsedProxyUrl.password}@` : `${parsedProxyUrl.username}@`) :
+        '';
+    const normalizedProxyUrl = `${parsedProxyUrl.protocol}//${auth}${parsedProxyUrl.host}`;
+    // Create and return Undici ProxyAgent compatible with fetch's dispatcher option
+    return new ProxyAgent({ uri: normalizedProxyUrl, connect: getConnectOptions() });
+}
+/**
+ * Returns a singleton undici Agent with system CA certificates in the connect
+ * options. Used as a dispatcher when no proxy is configured, to ensure
+ * undici's fetch uses system CAs instead of only Node's compiled-in bundle.
+ *
+ * The agent (and the CA bundle disk read) is created once and reused across
+ * requests to avoid repeated synchronous I/O and connection pool proliferation.
+ *
+ * Returns undefined if no system CA bundle is found — callers should treat
+ * undefined as "use Node's default behavior".
+ */
+let _defaultAgentInitialized = false;
+let _defaultAgent;
+let _urlReaderAgent;
+export function createDefaultAgent() {
+    if (!_defaultAgentInitialized) {
+        _defaultAgentInitialized = true;
+        const connectOpts = getConnectOptions();
+        if (Object.keys(connectOpts).length > 0) {
+            _defaultAgent = new Agent({ connect: connectOpts });
+        }
+    }
+    return _defaultAgent;
+}
+/**
+ * Resolve the User-Agent for SearXNG-instance requests.
+ */
+export function getSearchUserAgent() {
+    return process.env.SEARCH_USER_AGENT || process.env.USER_AGENT;
+}
+/**
+ * Apply the shared SearXNG-instance request configuration — SEARCH-group
+ * proxy dispatcher, Basic Auth credentials, and resolved SEARCH-group
+ * User-Agent header — to an outgoing request.
+ *
+ * Used by every SearXNG-instance fetch: `/search` (`search.ts`), `/config`
+ * (`instance-info.ts`), and `/autocompleter` (`suggestions.ts`). Auth-gated
+ * SearXNG instances return 401 on `/config` and `/autocompleter` unless the
+ * `Authorization` header is present, so the Basic Auth block must live here
+ * alongside the proxy/User-Agent wiring rather than only in `search.ts`.
+ * Credentials come from the instance URL userinfo first (per-instance), then
+ * fall back to the global `AUTH_*` env vars — see `getSearxngBasicAuthHeader`.
+ * `web_url_read` deliberately does NOT use this — it fetches arbitrary URLs.
+ *
+ * The User-Agent and Authorization are merged through a `Headers` instance,
+ * so any already-set `headers` — whether a plain object, a `Headers` instance,
+ * or a tuple array — is preserved; the result is written back as a plain
+ * object.
+ */
+export function applySearchRequestConfig(requestOptions, targetUrl) {
+    const proxyAgent = createProxyAgent(targetUrl, ProxyType.SEARCH);
+    const dispatcher = proxyAgent ?? createDefaultAgent();
+    if (dispatcher) {
+        requestOptions.dispatcher = dispatcher;
+    }
+    // Always normalize headers via Headers so all mutations below merge
+    // cleanly regardless of the incoming HeadersInit shape.
+    const headers = new Headers(requestOptions.headers);
+    const authHeader = getSearxngBasicAuthHeader(new URL(targetUrl));
+    if (authHeader) {
+        headers.set("Authorization", authHeader);
+    }
+    const userAgent = getSearchUserAgent();
+    if (userAgent) {
+        headers.set("User-Agent", userAgent);
+    }
+    requestOptions.headers = Object.fromEntries(headers);
+}
+/**
+ * Apply global proxy and trust-store configuration to an operator-trusted side
+ * service. Type-specific search and URL-reader proxy variables deliberately do
+ * not apply.
+ */
+export function applyTrustedServiceRequestConfig(requestOptions, targetUrl) {
+    const dispatcher = createProxyAgent(targetUrl) ?? createDefaultAgent();
+    if (dispatcher) {
+        requestOptions.dispatcher = dispatcher;
+    }
+}
+/**
+ * Returns a singleton undici Agent for direct `web_url_read` requests.
+ *
+ * Unlike the shared default agent, this is always created so the URL reader's
+ * DNS validation hook is present even when no system CA bundle is detected.
+ */
+export function createUrlReaderAgent() {
+    if (!_urlReaderAgent) {
+        _urlReaderAgent = new Agent({
+            connect: {
+                ...getConnectOptions(),
+                lookup: createUrlReaderLookup(),
+            },
+        });
+    }
+    return _urlReaderAgent;
+}

@@ -1,4 +1,6 @@
+#!/usr/bin/env node
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
   CallToolRequestSchema,
@@ -43,6 +45,8 @@ import { parseStrictInteger } from "./env-int.js";
 import { validateBrowserSolverEnvironment } from "./browser-solver-config.js";
 
 import { packageVersion } from "./version.js";
+
+
 
 // Type guard for URL reading args
 export function isWebUrlReadArgs(args: unknown): args is {

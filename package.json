@@ -25,8 +25,9 @@
     ],
     "type": "module",
     "bin": {
-        "mcp-searxng": "dist/cli.js"
+        "mcp-searxng": "dist/index.js"
     },
+
     "main": "dist/index.js",
     "files": [
         "dist"

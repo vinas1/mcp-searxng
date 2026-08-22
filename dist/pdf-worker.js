@@ -1,0 +1,140 @@
+import { parentPort, workerData } from "node:worker_threads";
+import { MAX_PDF_PAGES } from "./pdf-reader.js";
+import { installPdfNetworkGuards } from "./pdf-network-guard.js";
+export const PDF_DOCUMENT_OPTIONS = Object.freeze({
+    isEvalSupported: false,
+    enableXfa: false,
+    useSystemFonts: false,
+    disableFontFace: true,
+    disableAutoFetch: true,
+    disableStream: true,
+    useWorkerFetch: false,
+    useWasm: false,
+    cMapUrl: undefined,
+    standardFontDataUrl: undefined,
+    wasmUrl: undefined,
+    iccUrl: undefined,
+    verbosity: 0,
+});
+function containsExternalFetchMarker(error) {
+    let current = error;
+    for (let depth = 0; depth < 4; depth++) {
+        if (!current || typeof current !== "object") {
+            return false;
+        }
+        const candidate = current;
+        if (candidate.name === "ExternalFetchAttemptError"
+            || String(candidate.message).includes("PDF_EXTERNAL_FETCH_ATTEMPT")) {
+            return true;
+        }
+        current = candidate.cause;
+    }
+    return false;
+}
+function isPasswordError(error) {
+    return typeof error === "object"
+        && error !== null
+        && error.name === "PasswordException";
+}
+function normalizeMergedText(texts) {
+    return texts
+        .join("\n")
+        .replace(/[^\S\n]+/g, " ")
+        .replace(/ ?\n ?/g, "\n")
+        .replace(/\n{3,}/g, "\n\n")
+        .trim();
+}
+function removeUnsafeControlCharacters(text) {
+    return text.replace(/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/g, "");
+}
+function isPdfWorkerInput(value) {
+    if (!value || typeof value !== "object") {
+        return false;
+    }
+    const input = value;
+    return input.version === 1
+        && input.pdfBytes instanceof ArrayBuffer
+        && Number.isSafeInteger(input.maxTextBytes)
+        && (input.maxTextBytes ?? 0) > 0;
+}
+function renderTextItem(item) {
+    if (!item || typeof item !== "object" || !("str" in item) || typeof item.str !== "string") {
+        return "";
+    }
+    return item.str + ("hasEOL" in item && item.hasEOL ? "\n" : "");
+}
+async function readPageText(page) {
+    try {
+        const content = await page.getTextContent();
+        const rawText = content.items.map(renderTextItem).join("");
+        return normalizeMergedText([removeUnsafeControlCharacters(rawText)]);
+    }
+    finally {
+        page.cleanup();
+    }
+}
+async function extractDocumentText(pdf, maxTextBytes) {
+    if (pdf.numPages > MAX_PDF_PAGES) {
+        return { version: 1, kind: "too_many_pages", totalPages: pdf.numPages };
+    }
+    const pageTexts = [];
+    const encoder = new TextEncoder();
+    let textBytes = 0;
+    for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
+        const pageText = await readPageText(await pdf.getPage(pageNumber));
+        if (pageText === "") {
+            continue;
+        }
+        textBytes += encoder.encode(pageText).byteLength + (pageTexts.length > 0 ? 1 : 0);
+        if (textBytes > maxTextBytes) {
+            return { version: 1, kind: "text_too_large", bytes: textBytes };
+        }
+        pageTexts.push(pageText);
+    }
+    const text = pageTexts.join("\n");
+    return text === ""
+        ? { version: 1, kind: "no_text", totalPages: pdf.numPages }
+        : { version: 1, kind: "text", text, totalPages: pdf.numPages, textBytes };
+}
+function classifyParserError(error) {
+    if (containsExternalFetchMarker(error)) {
+        return { version: 1, kind: "external_fetch_attempt" };
+    }
+    return isPasswordError(error)
+        ? { version: 1, kind: "password_protected" }
+        : { version: 1, kind: "parse_error" };
+}
+async function extract() {
+    if (!isPdfWorkerInput(workerData)) {
+        return { version: 1, kind: "parse_error" };
+    }
+    // The document loader receives bytes rather than a URL, so no target-derived
+    // filesystem path exists. Block the Node fetch, HTTP(S), TCP, and TLS
+    // primitives used by the parser as a second layer while parsing untrusted
+    // document content.
+    const restoreNetwork = installPdfNetworkGuards();
+    let pdf;
+    try {
+        // Import after the guards are active so parser dependencies cannot retain
+        // unguarded references to Node network primitives during module loading.
+        const { getDocumentProxy } = await import("unpdf");
+        pdf = await getDocumentProxy(new Uint8Array(workerData.pdfBytes), PDF_DOCUMENT_OPTIONS);
+        return await extractDocumentText(pdf, workerData.maxTextBytes);
+    }
+    catch (error) {
+        return classifyParserError(error);
+    }
+    finally {
+        restoreNetwork();
+        try {
+            await pdf?.destroy();
+        }
+        catch {
+            // The extraction result is authoritative; teardown failures stay inside the worker.
+        }
+    }
+}
+const outputPort = parentPort;
+if (outputPort) {
+    void extract().then((result) => outputPort.postMessage(result));
+}

@@ -1,0 +1,32 @@
+import { logMessage } from "./logging.js";
+import { applySearchRequestConfig, fetchSearxng } from "./proxy.js";
+import { getPrimarySearxngInstance, stripSearxngInstanceUrlUserinfo } from "./searxng-instances.js";
+export async function performSearchSuggestions(mcpServer, query, language = "all") {
+    const base = getPrimarySearxngInstance();
+    if (!base) {
+        return [];
+    }
+    const parsedBase = new URL(base.endsWith("/") ? base : `${base}/`);
+    const url = new URL("autocompleter", parsedBase);
+    url.searchParams.set("q", query);
+    if (language !== "all") {
+        url.searchParams.set("lang", language);
+    }
+    const requestUrl = stripSearxngInstanceUrlUserinfo(url);
+    try {
+        const requestOptions = {
+            signal: AbortSignal.timeout(5000),
+        };
+        applySearchRequestConfig(requestOptions, url.toString());
+        const response = await fetchSearxng(requestUrl.toString(), requestOptions);
+        if (!response.ok) {
+            return [];
+        }
+        const data = await response.json();
+        return Array.isArray(data[1]) ? data[1] : [];
+    }
+    catch {
+        logMessage(mcpServer, "debug", "Autocomplete request failed; returning empty suggestions");
+        return [];
+    }
+}

@@ -1,0 +1,76 @@
+import { existsSync, readFileSync } from "node:fs";
+import { platform } from "node:process";
+/**
+ * Ordered list of well-known system CA bundle paths.
+ * Checked in order; first path that exists and is readable wins.
+ */
+const CA_BUNDLE_PATHS = [
+    "/etc/ssl/certs/ca-certificates.crt", // Debian/Ubuntu/WSL2
+    "/etc/pki/tls/certs/ca-bundle.crt", // RHEL/CentOS/Fedora
+    "/etc/ssl/ca-bundle.pem", // OpenSUSE
+    "/etc/ssl/cert.pem", // Alpine, macOS
+];
+/**
+ * Reads system CA certificates from well-known bundle paths, plus an optional
+ * user-provided extra bundle pointed to by `NODE_EXTRA_CA_CERTS`.
+ *
+ * On Windows (and on any platform where no system bundle is found) this
+ * returns `null`, so callers pass no explicit `ca` to undici and Node's
+ * default trust store — Mozilla roots plus `NODE_EXTRA_CA_CERTS` — is used.
+ * This is intentional: passing an explicit `connect.ca` *replaces* the
+ * default trust store entirely, which would drop both the Mozilla roots and
+ * the extra CA unless we re-merged them ourselves.
+ *
+ * On Linux/macOS when a system bundle *is* found, the system bundle is
+ * returned with the extra bundle appended. Here an explicit `ca` is already
+ * being set (overriding the default path), so folding in the extra bundle is
+ * required to keep `NODE_EXTRA_CA_CERTS` honored in that case.
+ */
+export function getSystemCACerts(deps = {}) {
+    const { platformName = platform, fileExists = existsSync, 
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
+    readFile = (path) => readFileSync(path, "utf8"), caPaths = CA_BUNDLE_PATHS, extraCaPath = process.env.NODE_EXTRA_CA_CERTS, } = deps;
+    const bundles = [];
+    // Windows has no universal CA bundle path; skip auto-detection. Node's
+    // default trust store (Mozilla + NODE_EXTRA_CA_CERTS) handles Windows.
+    if (platformName !== "win32") {
+        for (const caPath of caPaths) {
+            if (fileExists(caPath)) {
+                try {
+                    bundles.push(readFile(caPath));
+                    break; // first readable bundle wins, matching prior behavior
+                }
+                catch {
+                    // File exists but is unreadable (permissions); try next
+                    continue;
+                }
+            }
+        }
+    }
+    // Only fold in the extra CA when a system bundle already forces an explicit
+    // `ca` override. If no system bundle was found, returning `null` here lets
+    // Node's default trust store — which already includes NODE_EXTRA_CA_CERTS —
+    // handle validation, instead of replacing it with the extra CA alone.
+    if (extraCaPath && bundles.length > 0) {
+        try {
+            bundles.push(readFile(extraCaPath));
+        }
+        catch {
+            // Unreadable extra path is silently ignored — same as Node's behavior.
+        }
+    }
+    return bundles.length > 0 ? bundles.join("\n") : null;
+}
+/**
+ * Returns undici `connect` options with system CA certs, or an empty object
+ * if no system CA bundle is found (undici uses Node's compiled-in Mozilla
+ * bundle in that case).
+ *
+ * Usage:
+ *   new Agent({ connect: getConnectOptions() })
+ *   new ProxyAgent({ uri: proxyUrl, connect: getConnectOptions() })
+ */
+export function getConnectOptions(deps = {}) {
+    const ca = getSystemCACerts(deps);
+    return ca !== null ? { ca } : {};
+}

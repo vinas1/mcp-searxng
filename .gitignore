@@ -1,71 +1,54 @@
-# Build outputs
-dist
-build
-
-# Test outputs
-coverage
-
-# Dependencies
-node_modules
-
-# Environment variables
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-.env.e2e
+# DevPlat recommended ignore rules
+#AI
+.clinerules
 
 # Logs
+logs/
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-logs
-*.log
+pnpm-debug.log*
+lerna-debug.log*
 
-# Editor directories and files
-.idea
-.vscode
+# Node and build output
+node_modules/
+dist-ssr/
+
+*.local
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Editors and IDEs
+.vscode/*
+!.vscode/extensions.json
+.idea/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
-.roo
-.agents
 
-# OS files
+# Python
+__pycache__/
+*.pyc
+
+# macOS
 .DS_Store
+.AppleDouble
+.LSOverride
+Icon_
+
+# Windows
 Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.lnk
 
-# Claude
-.claude
-
-# Codex
-.codex
-
-# registry credentials
-.mcpregistry*
-
-# Docker files
-docker-compose.yml
-docker-compose.override.yml
-
-# AI process artifacts (plans, brainstorms, drafts) — must never be committed
-docs/superpowers/
-docs/plans/
-
-# TODO lists (private planning files)
-TODO.md
-TODO-features.md
-TODO-bugs.md
-TODO-security.md
-TODO-done.md
-TODO-later.md
-
-# Additional ignores from the original file
-secrets.yaml
-**/secrets.yaml
-
-pnpm-debug.log*
-lerna-debug.log*
+# Linux
+.directory
+*~
