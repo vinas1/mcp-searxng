@@ -1,6 +1,6 @@
 import { sanitizeDiagnosticText, sanitizeDiagnosticValue, sanitizeErrorForTransport, } from "./diagnostic-sanitizer.js";
 import { writeDiagnostic } from "./diagnostic-output.js";
-export const DEFAULT_LOG_LEVEL = "info";
+export const DEFAULT_LOG_LEVEL = "error";
 const logLevelsByServer = new WeakMap();
 const LOG_LEVELS = [
     "debug",

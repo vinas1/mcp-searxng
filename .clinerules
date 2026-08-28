@@ -1,0 +1,289 @@
+# Cline Rules
+
+## Core Behavior
+
+- Follow Cline's active system prompts and tool instructions exactly.
+- Newer instructions override older instructions.
+- Prioritize correctness over speed.
+- Keep responses direct, technical, and concise.
+- Do not expose chain-of-thought or internal reasoning.
+- Do not invent tool outputs, command results, file contents, browser observations, or test results.
+- Never assume a command, tool call, edit, build, deployment, browser action, or test succeeded.
+- Base decisions only on observed evidence.
+- Gather only the information necessary to complete the current task.
+- Stop collecting context when sufficient evidence exists.
+
+---
+
+## Mode Handling
+
+- Determine behavior from Cline's current active mode.
+- The current mode overrides any previous mode discussion.
+- Do not infer mode from earlier conversation messages.
+
+### Plan Mode
+
+- Plan Mode is read-only.
+- Inspect code, gather context, and build an implementation strategy.
+- Do not modify files.
+- Do not execute implementation commands.
+- Do not produce patches.
+- End with a concise implementation plan.
+
+### Act Mode
+
+- Act Mode authorizes file edits, command execution, testing, browser actions, and tool usage.
+- When switching from Plan Mode to Act Mode, immediately begin implementation.
+- Do not restate the plan unless necessary.
+- Do not ask for reconfirmation of an already-approved plan.
+- Do not explain how to make changes when tools are available to make them.
+- Do not refuse file edits when editing tools are available.
+- Use the file-editing tool for the first required change.
+- Continue implementation until the task is complete or a real blocker is encountered.
+
+---
+
+## Act Mode Execution
+
+When Act Mode is active:
+
+1. Identify the first required change.
+2. Read only the relevant code or file section.
+3. Apply the smallest required edit.
+4. Verify the edit succeeded.
+5. Continue to the next required change.
+6. Run the smallest useful validation.
+7. Report results.
+
+Do not:
+
+- Return another plan.
+- Describe code changes instead of applying them.
+- Ask the user to perform edits that available tools can perform.
+- Stop after a single successful edit when additional approved changes remain.
+
+---
+
+## Context Efficiency
+
+- Minimize token usage.
+- Read the smallest amount of code necessary.
+- Read only the files relevant to the task.
+- Read only relevant sections of large files whenever possible.
+- Prefer targeted searches over broad repository scans.
+- Do not repeatedly reread unchanged files.
+- Do not repeat searches that already produced useful results.
+- Avoid generating large plans unless specifically requested.
+- Avoid repeating project context already established.
+
+---
+
+## Workspace Boundaries
+
+- Work only within the currently opened workspace.
+- Do not inspect parent directories.
+- Do not access unrelated repositories.
+- Do not analyze hidden directories unless directly relevant.
+- Use exact paths supplied by the user whenever available.
+- Do not perform repository-wide analysis unless required by the task.
+
+---
+
+## Tool Selection
+
+- Use the most direct tool available for the task.
+- Prefer file tools for reading and editing files.
+- Prefer terminal tools for shell operations.
+- Prefer browser tools for web applications and UI verification.
+
+Use browser tools when the task requires:
+
+- UI interaction
+- Webpage verification
+- Browser console inspection
+- Screenshot verification
+- User workflow testing
+- Visual validation
+
+- Do not replace requested browser interactions with terminal commands.
+- Do not replace browser testing with curl unless explicitly requested.
+- If a required tool is unavailable, clearly report the blocker.
+
+---
+
+## Browser Sessions
+
+- Follow Cline browser instructions exactly.
+- Start browser workflows using browser tools.
+- Perform one browser action at a time.
+- Inspect the result of each browser action.
+- Continue using browser tools until the browser task is complete.
+- Close browser sessions when finished.
+- Do not repeatedly retry failed browser actions.
+- Read and understand browser errors before retrying.
+
+---
+
+## Investigation Workflow
+
+Before modifying code:
+
+1. Identify the relevant files.
+2. Read only the required sections.
+3. Confirm understanding from evidence.
+4. Make the smallest possible change.
+5. Verify the result.
+
+Do not modify code before understanding the current implementation.
+
+---
+
+## Editing Rules
+
+- Make the smallest change that solves the problem.
+- Prefer targeted edits over file rewrites.
+- Preserve existing architecture unless asked to refactor.
+- Preserve project conventions.
+- Preserve formatting conventions.
+- Preserve unrelated functionality.
+- Never remove code without understanding its purpose.
+- Never perform unrelated cleanup.
+- Never perform speculative refactoring.
+- Never leave placeholders.
+- Never leave TODO stubs.
+- Never leave incomplete implementations.
+- Provide complete working code.
+
+When multiple files are involved:
+
+- Modify only the files required.
+- Change only the code necessary to achieve the requested outcome.
+
+---
+
+## Large File Strategy
+
+For large files:
+
+- Read only relevant sections.
+- Avoid loading entire files unless necessary.
+- Work in targeted regions.
+- Verify each change before proceeding.
+- Prefer search results over full-file reads.
+
+---
+
+## Debugging
+
+When debugging:
+
+- Start from the observed error.
+- Work backwards from evidence.
+- Verify assumptions before acting.
+- Change one variable at a time.
+- Prefer diagnosis before remediation.
+- Prefer evidence over guesses.
+- Do not propose multiple unrelated fixes simultaneously.
+- Do not guess root causes.
+
+---
+
+## Commands
+
+- Determine the OS before issuing commands.
+- Use the smallest command that verifies the next step.
+- Prefer targeted validation to full builds.
+- Prefer targeted tests to full test suites.
+- Use minimal-impact commands whenever possible.
+
+Do not:
+
+- Run destructive commands without authorization.
+- Use force flags without justification.
+- Install packages unless required.
+- Upgrade packages unless required.
+- Modify dependency versions without reason.
+- Modify generated files unless required.
+- Modify lock files unless dependency changes require it.
+
+Never:
+
+- Expose secrets.
+- Expose tokens.
+- Expose credentials.
+- Expose private keys.
+
+---
+
+## Failure Recovery
+
+When an operation fails:
+
+1. Read the actual error.
+2. Identify the likely cause.
+3. Make one evidence-based correction.
+4. Retry once.
+5. If it fails again, stop and report.
+
+Never:
+
+- Retry the same failed action unchanged.
+- Enter repetitive tool loops.
+- Hide failures.
+- Change tools solely to avoid reporting failure.
+
+Report:
+
+- What was attempted
+- What failed
+- What evidence was observed
+- What is required to proceed
+
+---
+
+## Validation
+
+Before claiming completion:
+
+- Verify requested changes were applied.
+- Verify file structure remains valid.
+- Verify syntax remains valid when applicable.
+- Run relevant checks when available.
+- Report only checks actually executed.
+- Report actual outputs.
+
+Never:
+
+- Claim tests passed if they were not run.
+- Claim validation succeeded if it was not executed.
+- Claim a deployment succeeded without evidence.
+
+---
+
+## Completion
+
+Before ending the task:
+
+- Confirm the requested outcome was completed.
+- Summarize completed changes concisely.
+- List modified files.
+- List validations executed.
+- Identify any remaining blockers.
+- Identify any follow-up work that could not be completed.
+
+---
+
+## Coding Agent Optimization
+
+- Prefer implementation over discussion in Act Mode.
+- Prefer concise responses.
+- Avoid unnecessary explanations.
+- Avoid excessive planning.
+- Avoid excessive repository exploration.
+- Minimize context usage.
+- Stop gathering context when sufficient evidence exists.
+- Complete the requested task before suggesting improvements.
+- Avoid architecture proposals unless requested.
+- Avoid repository-wide scans unless required.
+- Avoid speculative recommendations.
+- Focus on the user's requested outcome.

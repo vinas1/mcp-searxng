@@ -1,6 +1,22 @@
-# DevPlat recommended ignore rules
-#AI
-.clinerules
+# Security & Secrets
+secrets.yaml
+**/secrets.yaml
+.env
+.env.*
+!.env.example
+
+# Build Outputs & Cache
+dist/
+dist-ssr/
+/build/
+.cache/
+/coverage/
+*.local
+
+# Node Dependencies
+node_modules/
+/.pnp
+.pnp.js
 
 # Logs
 logs/
@@ -11,18 +27,7 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Node and build output
-node_modules/
-dist-ssr/
-
-*.local
-
-# Environment files
-.env
-.env.*
-!.env.example
-
-# Editors and IDEs
+# Editors & IDEs
 .vscode/*
 !.vscode/extensions.json
 .idea/
@@ -32,23 +37,17 @@ dist-ssr/
 *.sln
 *.sw?
 
-# Python
+# Language & OS Specific
 __pycache__/
 *.pyc
-
-# macOS
 .DS_Store
 .AppleDouble
 .LSOverride
 Icon_
-
-# Windows
 Thumbs.db
 Thumbs.db:encryptable
 ehthumbs.db
 ehthumbs_vista.db
 *.lnk
-
-# Linux
 .directory
 *~
