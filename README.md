@@ -126,6 +126,7 @@ For measured MCP-process CPU and memory starting points, see
 [measured deployment profiles](docs/deployment-profiles.md).
 
 ---
+
 ## 🛡️ Safe and Secure Local Clone Usage (recommended)
 
 If you have *cloned this repository* and want to run the server locally without relying on `npx`, follow the **Local MCP-SearXNG Quickstart** below:
@@ -142,7 +143,7 @@ npm run build
 ```
 
 ### Cline config
-Click the hambuger looking icon, then press the gear icon. See the graphic for help, then enter the following JSON.
+I'm providing the quick start to [Cline](https://www.cline.bot), which is how I use searXNG MCP every day. First, click the hambuger looking icon, then press the gear icon. See the graphic for help, then enter the following JSON.
 
 
 
