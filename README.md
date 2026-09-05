@@ -30,7 +30,7 @@ json
 "args": ["-y", "mcp-searxng"]
 ```
 
-Use code with caution.
+Use that code with caution.
 
 Why this is unsafe:
 
@@ -57,7 +57,7 @@ Option A: Local Installation (Recommended for project isolation)
     npm install mcp-searxng@1.0.0 --save-exact
     ```
     
-    Use code with caution.
+    
     
 2. Point your configuration directly to the local node modules binary path:
     
@@ -77,7 +77,7 @@ Option A: Local Installation (Recommended for project isolation)
     }
     ```
     
-    Use code with caution.
+    
     
 
 Option B: Global Pinned Installation
@@ -90,7 +90,7 @@ Option B: Global Pinned Installation
     npm install -g mcp-searxng@1.0.0
     ```
     
-    Use code with caution.
+    
     
 2. Call the command directly (ensure your global npm `bin` directory is in your system's PATH):
     
@@ -110,7 +110,7 @@ Option B: Global Pinned Installation
     }
     ```
     
-    Use code with caution.
+    
 
 Replace `YOUR_SEARXNG_INSTANCE_URL` with the URL of your SearXNG instance (e.g. `https://searxng.example.com`). You can also provide interchangeable replicas as a semicolon-separated list, e.g. `https://one.example.com;https://two.example.com`.
 
