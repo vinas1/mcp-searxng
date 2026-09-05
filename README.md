@@ -3,7 +3,7 @@
 
 # 🔍 SearXNG MCP Server
 
-**Privacy-respecting web search for AI assistants — use an operator-controlled or trusted SearXNG instance with Claude, Cursor, and more.**
+**Privacy-respecting web search for AI assistants — use an operator-controlled, trusted SearXNG instance with Claude, Cursor, Cline, Bionic, and more.**
 
 
 
