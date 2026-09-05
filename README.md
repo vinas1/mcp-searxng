@@ -141,6 +141,7 @@ cd D:\c0dex\GitHub\vinas1\vinas1.github.io
 npm install
 npm run build
 ```
+<br><br>
 
 ### Cline config
 I'm providing the quick start to [Cline](https://www.cline.bot), which is how I use searXNG MCP every day. 
@@ -151,6 +152,8 @@ First, open your IDE and open cline. Click the hambuger looking icon, then press
 <img width="551" height="187" alt="image" src="https://github.com/user-attachments/assets/922990f8-7d46-4df3-94f4-511375ef23af" />
 
 *a green dot will be present when the MCP server is working, as shown above*
+> make sure to replace my local path with yours!
+> example: D:\\c0dex\\GitHub\\vinas1\\mcp-searxng
 
 ```json
 {  
@@ -170,6 +173,8 @@ First, open your IDE and open cline. Click the hambuger looking icon, then press
 }  
 }
 ```
+> the SEARXNG_URL should be updated to your locally installed searXNG IP!
+
 Then:
 
 1. Save the file with Ctrl+S.
@@ -177,6 +182,7 @@ Then:
 3. Run **Developer: Reload Window**.
 4. Open Cline → MCP Servers → Installed.
 
+<br>
 
 ---
 
