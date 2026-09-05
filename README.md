@@ -145,7 +145,7 @@ npm run build
 
 ### Cline config
 I'm providing the quick start to [Cline](https://www.cline.bot), which is how I use searXNG MCP every day. 
-First, open your IDE and open cline. Click the hambuger looking icon, then press the gear icon. See the graphic for help, then enter the following JSON.
+First, open your IDE and open cline. In VScode you'd click the hambuger looking icon, then press the gear icon. See the graphic for help, then enter the following JSON.
 
 
 
