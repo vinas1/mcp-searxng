@@ -155,7 +155,9 @@ async function extract(): Promise<PdfWorkerResult> {
   } finally {
     restoreNetwork();
     try {
-      await pdf?.destroy();
+      await pdf?.cleanup();
+      await (pdf as { destroy?: () => Promise<void> } | undefined)?.destroy?.();
+      await pdf?.loadingTask?.destroy();
     } catch {
       // The extraction result is authoritative; teardown failures stay inside the worker.
     }

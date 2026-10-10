@@ -127,7 +127,9 @@ async function extract() {
     finally {
         restoreNetwork();
         try {
-            await pdf?.destroy();
+            await pdf?.cleanup();
+            await pdf?.destroy?.();
+            await pdf?.loadingTask?.destroy();
         }
         catch {
             // The extraction result is authoritative; teardown failures stay inside the worker.
