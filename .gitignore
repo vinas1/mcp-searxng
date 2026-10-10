@@ -1,3 +1,6 @@
+#local ai context
+*.context
+
 # Security & Secrets
 secrets.yaml
 **/secrets.yaml
