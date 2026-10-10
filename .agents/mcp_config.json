@@ -1,0 +1,24 @@
+{
+  "mcpServers": {
+    "lmstudio-local": {
+      "command": "python",
+      "args": [
+        ".agents/mcp_llm_bridge.py",
+        "--name",
+        "lmstudio-local",
+        "--base-url",
+        "http://127.0.0.1:1234/v1"
+      ]
+    },
+    "lmstudio-amd-halo": {
+      "command": "python",
+      "args": [
+        ".agents/mcp_llm_bridge.py",
+        "--name",
+        "lmstudio-amd-halo",
+        "--base-url",
+        "http://amd-halo:1234/v1"
+      ]
+    }
+  }
+}

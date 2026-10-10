@@ -1,0 +1,12 @@
+{
+  "quota-guard": {
+    "enabled": true,
+    "PreInvocation": [
+      {
+        "type": "command",
+        "command": "python .agents/agents/check_quota_guard.py",
+        "timeout": 10
+      }
+    ]
+  }
+}
