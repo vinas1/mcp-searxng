@@ -182,6 +182,55 @@ Then:
 3. Run **Developer: Reload Window**.
 4. Open Cline → MCP Servers → Installed.
 
+### Linux Setup Guide
+
+The `mcp-searxng` package works on Linux systems with these requirements:
+
+1. **System Requirements**:
+   - Node.js 20+ (installed via `sudo apt install nodejs npm`)
+   - Git for cloning repositories
+   - Internet access for npm dependencies
+
+2. **Installation Process**:
+```bash
+# Clone and install the package  
+git clone https://github.com/vinas1/mcp-searxng.git /home/jld/mcp-searxng
+cd /home/jld/mcp-searxng
+npm install  # This installs all dependencies including @modelcontextprotocol/sdk
+
+# Verify installation works
+node dist/cli.js --help
+```
+
+3. **Configuration File (Linux)**:
+```json
+{
+  "mcpServers": {
+    "searxng": {
+      "transport": {
+        "type": "stdio",
+        "command": "/usr/bin/node",
+        "args": [
+          "/home/jld/mcp-searxng/dist/cli.js"
+        ],
+        "cwd": "/home/jld/mcp-searxng",
+        "env": {
+          "SEARXNG_URL": "http://192.168.0.60:8080/"
+        }
+      },
+      "disabled": false,
+      "autoApprove": [
+        "searxng_search_suggestions",
+        "searxng_web_search", 
+        "web_url_read"
+      ]
+    }
+  }
+}
+```
+
+> For comprehensive details, troubleshooting, and Windows vs Linux comparisons, see the [Linux Setup Guide](docs/linux-setup.md).
+
 <br>
 
 ---

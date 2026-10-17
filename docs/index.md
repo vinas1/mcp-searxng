@@ -7,6 +7,7 @@
 - **[Operating Self-Hosted SearXNG](self-hosted-searxng.md)** — SearXNG operation and MCP integration
 - **[Using a Public SearXNG Instance](public-searxng-instances.md)** — Trust, evaluation, and conservative-use guidance
 - **[MCP Client Configuration Cookbook](client-configurations.md)** — Verified local and remote recipes for eight MCP clients
+- **[Linux Setup Guide](linux-setup.md)** — Working configuration, path mappings, and troubleshooting for Linux systems
 - **[Evidence-Focused Research Workflow](research-workflow.md)** — Bounded search, source inspection, cross-checking, and citation guidance
 - **[Measured MCP Deployment Profiles](deployment-profiles.md)** — Point-in-time MCP-process measurements and resource starting ranges
 - **[SECURITY](../SECURITY.md)** — Threat model, SSRF protection, HTTP hardening, and vulnerability reporting
