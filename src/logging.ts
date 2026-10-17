@@ -7,7 +7,7 @@ import {
 } from "./diagnostic-sanitizer.js";
 import { writeDiagnostic } from "./diagnostic-output.js";
 
-export const DEFAULT_LOG_LEVEL: LoggingLevel = "error";
+export const DEFAULT_LOG_LEVEL: LoggingLevel = "info";
 const logLevelsByServer = new WeakMap<McpServer, LoggingLevel>();
 
 const LOG_LEVELS: LoggingLevel[] = [
