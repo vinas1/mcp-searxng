@@ -59,7 +59,7 @@
     "node-html-markdown": "^2.0.0",
     "node-html-parser": "^6.1.13",
     "undici": "7.30.1",
-    "unpdf": "1.8.1"
+    "unpdf": "1.9.1"
   },
   "devDependencies": {
     "@types/node": "22.20.5",
